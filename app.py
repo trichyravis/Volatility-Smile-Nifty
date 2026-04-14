@@ -91,27 +91,44 @@ st.html(f"""
         max-width: 1100px;
     }}
     
-    /* Tab styling */
+    /* Tab styling — two-row wrap */
     .stTabs [data-baseweb="tab-list"] {{
         gap: 6px;
         background: rgba(0,51,102,0.4);
         border-radius: 10px;
-        padding: 6px;
+        padding: 8px;
+        flex-wrap: wrap !important;
+        justify-content: center;
+    }}
+    .stTabs [data-baseweb="tab-list"] > div:first-child {{
+        /* Hide the default highlight bar since wrapping breaks it */
+        display: none !important;
     }}
     .stTabs [data-baseweb="tab"] {{
         color: {MUTED};
         font-family: 'Source Sans Pro', sans-serif;
         font-weight: 600;
-        font-size: 0.88rem;
+        font-size: 0.86rem;
         border-radius: 8px;
-        padding: 8px 18px;
+        padding: 8px 16px;
+        white-space: nowrap;
+        border: 1px solid transparent;
+        transition: all 0.2s ease;
+    }}
+    .stTabs [data-baseweb="tab"]:hover {{
+        background: rgba(255,215,0,0.1);
+        border-color: rgba(255,215,0,0.25);
     }}
     .stTabs [aria-selected="true"] {{
         background: {GOLD} !important;
         color: {BLUE} !important;
+        border-color: {GOLD} !important;
     }}
     .stTabs [data-baseweb="tab-panel"] {{
         padding-top: 1rem;
+    }}
+    .stTabs [data-baseweb="tab-highlight"] {{
+        display: none !important;
     }}
     
     /* Selectbox, slider, number_input */
