@@ -538,13 +538,14 @@ def chart_parametric(sigma_atm, alpha, beta, height=480):
 # ══════════════════════════════════════════════════════════
 mountain_header()
 
-tab1, tab2, tab3, tab4, tab5, tab6 = st.tabs([
+tab1, tab2, tab3, tab4, tab5, tab6, tab7 = st.tabs([
     "📖 Introduction",
     "😊 Volatility Smile",
     "📉 Volatility Skew",
     "📊 Nifty Option Chain",
     "🔀 Smile vs Skew Overlay",
     "🎛 Parameter Explorer",
+    "🎓 Q&A — Test Yourself",
 ])
 
 # ── TAB 1: INTRODUCTION ──────────────────────────────────
@@ -786,5 +787,748 @@ with tab6:
     )
 
 
-# ── FOOTER ────────────────────────────────────────────────
+# ── TAB 7: Q&A — TEST YOURSELF ───────────────────────────
+with tab7:
+
+    # ── Q&A Data ──
+    QA_SECTIONS = {
+        "Section A — Foundations: What Is Implied Volatility?": [
+            {
+                "q": "Q1. What exactly is implied volatility (IV)?",
+                "a": """Implied volatility is the value of σ that, when plugged into the Black-Scholes formula, makes the
+model price equal to the observed market price of the option.
+
+<b>Formally (Hull notation):</b> Given a market-observed call price c<sub>mkt</sub>, the implied volatility σ<sub>imp</sub> satisfies:
+
+&emsp;c<sub>mkt</sub> = S₀·N(d₁) − K·e<sup>−rT</sup>·N(d₂) &nbsp;&nbsp;where d₁, d₂ use σ = σ<sub>imp</sub>
+
+It is <b>not</b> a forecast of future volatility. It is the market's <b>consensus pricing input</b> — the volatility
+that makes supply and demand balance at the observed premium.
+
+<b>Key insight:</b> If Black-Scholes were perfectly correct (lognormal returns, constant σ), then σ<sub>imp</sub> would be
+the same for every strike K and every expiry T. The fact that it varies is precisely what creates the smile/skew.""",
+            },
+            {
+                "q": "Q2. How is implied volatility different from historical (realized) volatility?",
+                "a": """<b>Historical Volatility (HV)</b> is backward-looking — it measures the standard deviation of past log returns
+over a specific window (e.g., 20-day, 60-day). It tells you what <em>did</em> happen.
+
+<b>Implied Volatility (IV)</b> is forward-looking — it is extracted from current option prices and reflects what
+the market <em>expects</em> (or more precisely, what the market is <em>pricing in</em>) for future volatility over the
+option's remaining life.
+
+<table style="width:100%; margin:10px 0; font-size:0.82rem;">
+<tr style="border-bottom:1px solid rgba(255,215,0,0.2);">
+  <td style="color:#ADD8E6; padding:6px;"><b>Feature</b></td>
+  <td style="color:#ADD8E6; padding:6px;"><b>Historical Vol</b></td>
+  <td style="color:#ADD8E6; padding:6px;"><b>Implied Vol</b></td>
+</tr>
+<tr><td style="padding:4px 6px;">Direction</td><td style="padding:4px 6px;">Backward-looking</td><td style="padding:4px 6px;">Forward-looking</td></tr>
+<tr><td style="padding:4px 6px;">Source</td><td style="padding:4px 6px;">Past return data</td><td style="padding:4px 6px;">Current option prices</td></tr>
+<tr><td style="padding:4px 6px;">Model-free?</td><td style="padding:4px 6px;">Yes (pure statistics)</td><td style="padding:4px 6px;">No (requires BS or another model)</td></tr>
+<tr><td style="padding:4px 6px;">Strike-dependent?</td><td style="padding:4px 6px;">No</td><td style="padding:4px 6px;">Yes — that's the smile/skew!</td></tr>
+<tr><td style="padding:4px 6px;">Contains risk premium?</td><td style="padding:4px 6px;">No</td><td style="padding:4px 6px;">Yes — includes fear/greed</td></tr>
+</table>
+
+Typically, <b>IV > HV</b> because option sellers demand a risk premium (the "variance risk premium").""",
+            },
+            {
+                "q": "Q3. Why does Black-Scholes assume constant volatility, and why is this unrealistic?",
+                "a": """Black-Scholes (1973) was derived under several simplifying assumptions, including:
+<br>• Geometric Brownian Motion: dS/S = μ·dt + σ·dW where σ is <b>constant</b>
+<br>• Log-returns are normally distributed → prices are lognormally distributed
+<br>• No jumps, no regime changes, no stochastic volatility
+
+<b>Why this fails in practice:</b>
+<br>• <b>Volatility clustering:</b> High-vol days tend to follow high-vol days (GARCH effects)
+<br>• <b>Fat tails:</b> Real return distributions have excess kurtosis (more extreme events than normal)
+<br>• <b>Negative skewness:</b> Equity markets crash more sharply than they rally
+<br>• <b>Jump risk:</b> Sudden large moves (earnings, geopolitical events) are not captured by diffusion
+<br>• <b>Leverage effect:</b> As stock prices fall, firm leverage rises → volatility increases
+
+All of these violations show up in the option market as a <b>non-flat implied volatility surface</b>.
+The smile and skew are the market's way of correcting for BS's flawed distributional assumptions.""",
+            },
+            {
+                "q": "Q4. What is the volatility surface σ(K, T)?",
+                "a": """The <b>volatility surface</b> is the complete three-dimensional mapping of implied volatility as a function
+of both strike price K and time to expiration T:
+
+&emsp;σ<sub>imp</sub> = σ(K, T)
+
+<b>Along the strike dimension (fixed T):</b> You see the smile or skew — the pattern we study in this app.
+<br><b>Along the maturity dimension (fixed K):</b> You see the <b>term structure of volatility</b> — IV often differs
+for 1-month vs 3-month vs 1-year options on the same underlying.
+
+Practitioners treat the volatility surface as an <b>empirical object</b> that must be calibrated daily from
+market prices. It is the single most important input for:
+<br>• Pricing exotic options
+<br>• Computing Greeks (delta hedging with smile-adjusted IV)
+<br>• Risk management (VaR for options portfolios)
+<br>• Relative value trading (identifying "cheap" vs "expensive" options)
+
+Hull (Ch. 20.4) emphasizes that the surface must be <b>arbitrage-free</b> — certain monotonicity and
+convexity conditions must hold across both K and T dimensions.""",
+            },
+        ],
+        "Section B — The Volatility Smile": [
+            {
+                "q": "Q5. What is a volatility smile and what shape does it take?",
+                "a": """A <b>volatility smile</b> is a U-shaped or parabolic pattern where implied volatility is <b>lowest at ATM</b>
+and <b>rises symmetrically</b> for both deep OTM and deep ITM options.
+
+<b>Hull's quadratic approximation:</b>
+&emsp;σ<sub>imp</sub>(K/S₀) ≈ σ<sub>ATM</sub> + α·(K/S₀ − 1)² &nbsp;&nbsp;where α > 0
+
+The key feature is <b>symmetry</b> — the left wing (low strikes / OTM puts) and right wing (high strikes /
+OTM calls) are approximately mirror images of each other.
+
+<b>Visual signature:</b> Plot σ<sub>imp</sub> vs moneyness (K/S₀). If the curve looks like a "U" or a smile, you have it.
+
+The smile tells you that the market believes extreme moves in <em>either</em> direction are more likely than
+what a lognormal distribution would predict — i.e., the implied distribution has <b>fat tails on both sides</b>
+(positive excess kurtosis, but near-zero skewness).""",
+            },
+            {
+                "q": "Q6. In which markets do we typically observe a volatility smile?",
+                "a": """The classic smile is most prominent in:
+
+<b>1. Foreign Exchange (FX) Options</b> — This is the textbook example. EUR/USD, USD/JPY, GBP/USD options
+all exhibit near-symmetric smiles. The reason: currencies don't have an inherent "crash" direction.
+A sharp move in USD/JPY could be a yen appreciation (bad for Japanese exporters) or a yen depreciation
+(bad for USD holders). Both tails carry risk.
+
+<b>2. Some Commodity Options</b> — Particularly those with symmetric supply/demand shocks (e.g., agricultural
+commodities where both droughts and bumper harvests create extreme moves).
+
+<b>3. Short-dated equity options around specific events</b> — Earnings announcements can produce a temporary
+smile because the stock could jump up (beat) or down (miss) with roughly equal probability.
+
+<b>FX market convention:</b> Traders quote FX options using the <b>25-delta risk reversal</b> (skew) and
+<b>25-delta butterfly</b> (curvature/smile). A large butterfly with small risk reversal = pure smile.
+
+Hull (Ch. 20.1) notes that FX smiles became more pronounced after the 1990s currency crises.""",
+            },
+            {
+                "q": "Q7. What distributional assumption does a smile imply? How does it differ from lognormal?",
+                "a": """A volatility smile implies that the market's <b>risk-neutral distribution</b> has:
+
+<b>1. Heavier tails than lognormal</b> (positive excess kurtosis / leptokurtic)
+<br><b>2. Roughly symmetric</b> tails (near-zero skewness)
+
+<b>Connecting smile to distribution (Hull Ch. 20.1):</b>
+<br>• Deep OTM put is expensive → market assigns higher probability to large downside moves than lognormal
+<br>• Deep OTM call is expensive → market assigns higher probability to large upside moves than lognormal
+<br>• Both tails are fatter → the implied PDF has more weight in both tails and less in the center
+
+Graphically, if you overlay the implied density on top of a lognormal density:
+<br>• The implied PDF has <b>fatter tails</b> on both sides
+<br>• The implied PDF has a <b>lower, wider peak</b>
+<br>• The total area under both curves = 1 (they're both valid probability distributions)
+
+<b>Models that produce smiles:</b>
+<br>• Jump-diffusion (Merton, 1976) — adds random jumps to GBM
+<br>• Stochastic volatility (Heston, 1993) — σ itself follows a random process
+<br>• Variance Gamma and other Lévy processes""",
+            },
+            {
+                "q": "Q8. How do you extract the implied risk-neutral distribution from option prices?",
+                "a": """This is a powerful result from Breeden & Litzenberger (1978):
+
+&emsp;<b>f(K) = e<sup>rT</sup> · ∂²C/∂K²</b>
+
+The second derivative of the call price with respect to strike price, discounted, gives you the
+<b>risk-neutral probability density function</b> at that strike.
+
+<b>Intuition:</b> A butterfly spread (long K−ΔK call, short 2×K calls, long K+ΔK call) pays off only if
+S<sub>T</sub> is near K. Its price, normalized, gives the probability that S<sub>T</sub> ≈ K.
+
+<b>Practical implementation:</b>
+<br>1. Collect call prices C(K) for many strikes at fixed T
+<br>2. Fit a smooth curve through C vs K
+<br>3. Differentiate twice: f(K) = e<sup>rT</sup> · C″(K)
+<br>4. The resulting f(K) is the implied risk-neutral PDF
+
+<b>What smile/skew means for f(K):</b>
+<br>• Smile → f(K) has fat tails both sides (leptokurtic)
+<br>• Skew → f(K) has a heavier left tail (negatively skewed)
+<br>• Flat IV → f(K) is exactly lognormal (the BS case)
+
+This is tested in CFA Level II and FRM Part 1 — know the formula and the intuition.""",
+            },
+        ],
+        "Section C — The Volatility Skew": [
+            {
+                "q": "Q9. What is a volatility skew (smirk) and how does it differ from a smile?",
+                "a": """A <b>volatility skew</b> (also called a "smirk") is an asymmetric pattern where:
+
+&emsp;• OTM puts (low strikes) have <b>significantly higher IV</b> than ATM
+<br>&emsp;• OTM calls (high strikes) have <b>slightly higher or similar IV</b> to ATM
+<br>&emsp;• The curve slopes <b>downward from left to right</b>
+
+<b>Hull's linear approximation:</b>
+&emsp;σ<sub>imp</sub>(K/S₀) ≈ σ<sub>ATM</sub> − β·(K/S₀ − 1) &nbsp;&nbsp;where β > 0
+
+<b>Key difference from smile:</b>
+<br>• <b>Smile:</b> Symmetric U-shape — both wings elevated equally
+<br>• <b>Skew:</b> Asymmetric — left wing (puts) much steeper than right wing (calls)
+
+The skew dominates in <b>equity and equity index markets</b> worldwide — S&P 500, Euro Stoxx 50,
+Nifty 50, FTSE 100, Nikkei 225. It appeared after the 1987 crash and has persisted ever since.
+
+Numerically for Nifty: Put IV at K=23,000 is 19.8% vs ATM Put IV of 12.1% — a spread of
+<b>+7.7 percentage points</b>. On the call side, OTM call IV at K=25,500 rises to only 16.5% (call)
+and 14.9% (put). The asymmetry is stark.""",
+            },
+            {
+                "q": "Q10. What caused the volatility skew to appear? Why October 1987?",
+                "a": """Before October 19, 1987 (<b>Black Monday</b>), the implied volatility surface for equity options was
+relatively flat — close to what BS predicted. On that single day:
+
+&emsp;• The Dow Jones fell <b>22.6%</b> — the largest single-day percentage drop in history
+<br>&emsp;• S&P 500 futures fell even more, briefly implying negative index values
+<br>&emsp;• Portfolio insurance (dynamic hedging) amplified the crash through a feedback loop
+
+<b>The aftermath:</b>
+<br>• OTM put prices <b>permanently</b> increased — they never returned to pre-crash levels
+<br>• Market makers realized that tail risk was far greater than lognormal implied
+<br>• "Crashophobia" (Rubinstein, 1994) became embedded in option pricing
+
+<b>Why it persists:</b>
+<br>1. <b>Leverage effect</b> — falling prices → higher debt/equity → higher vol (asymmetric)
+<br>2. <b>Demand for protection</b> — institutional investors systematically buy OTM puts as insurance
+<br>3. <b>Supply-demand imbalance</b> — fewer natural sellers of OTM puts → prices stay elevated
+<br>4. <b>Behavioral memory</b> — 1987, 2000, 2008, 2020 reinforced the fear of left-tail events
+<br>5. <b>Regulatory capital</b> — Basel/Solvency requirements incentivize downside hedging""",
+            },
+            {
+                "q": "Q11. What is 'crashophobia' and who coined the term?",
+                "a": """<b>Crashophobia</b> was coined by Mark Rubinstein in his seminal 1994 paper. It describes the
+persistent overpricing of OTM equity index puts relative to what any standard model
+(including jump-diffusion or stochastic volatility) would predict.
+
+<b>Rubinstein's argument:</b>
+<br>• After 1987, the implied risk-neutral distribution for equity indices became <b>permanently
+  left-skewed</b> — heavier left tail than even models with jumps would justify
+<br>• This excess left-tail weight represents a <b>fear premium</b> — investors are willing to
+  overpay for crash protection beyond what rational risk-neutral pricing would require
+<br>• This is consistent with behavioral finance: <b>loss aversion</b> and <b>probability weighting</b>
+  (overweighting rare catastrophic events, as in Prospect Theory)
+
+<b>Empirical evidence:</b>
+<br>• OTM puts on the S&P 500 have been systematically "overpriced" relative to realized
+  outcomes — selling them (put-writing strategies) has generated positive alpha historically
+<br>• The VIX (implied vol) consistently exceeds realized vol — the "variance risk premium"
+<br>• This pattern holds globally: Nifty, FTSE, DAX, Nikkei all exhibit similar skew
+
+<b>Exam note (CFA/FRM):</b> Crashophobia explains why the skew persists even in calm markets —
+it's structural, not just a reaction to recent events.""",
+            },
+            {
+                "q": "Q12. What distributional assumption does the equity skew imply?",
+                "a": """The equity volatility skew implies that the market's risk-neutral distribution is:
+
+<b>1. Negatively skewed</b> — heavier left tail (more probability mass for large drops)
+<br><b>2. Leptokurtic</b> — fatter tails overall than lognormal (excess kurtosis > 0)
+<br><b>3. Left tail >> Right tail</b> — the asymmetry is the defining feature
+
+<b>Comparison with lognormal:</b>
+<br>• Lognormal: already slightly right-skewed (prices can't go below zero but can go to infinity)
+<br>• Implied distribution: <b>much more</b> left-skewed than lognormal — the market "flips" the skew
+
+<b>Quantitative measures:</b>
+<br>• <b>Skew premium</b> = IV(25-delta put) − IV(25-delta call) — measures asymmetry
+<br>• <b>Risk reversal</b> = same concept, standard quoting convention
+<br>• For Nifty: typical skew premium is 4-8 percentage points
+<br>• For S&P 500: typically 5-10 percentage points
+
+<b>Why negative skew for equities but not FX?</b>
+<br>• Equities have a "floor fear" — companies can go bankrupt, indices can crash
+<br>• Currencies are relative prices — USD weakness = EUR strength (symmetric)
+<br>• The leverage effect is equity-specific (debt/equity ratio changes with price)""",
+            },
+        ],
+        "Section D — Nifty 50 Specifics & Indian Market": [
+            {
+                "q": "Q13. Does Nifty 50 show a smile, a skew, or both?",
+                "a": """Nifty 50 options show a <b>clear volatility skew</b>, consistent with global equity index behavior.
+
+<b>Evidence from our data (Spot = ₹24,250):</b>
+<br>• Put IV at K=23,000 (5.2% OTM): <b>19.8%</b>
+<br>• Put IV at ATM K=24,250: <b>12.1%</b>
+<br>• Put IV at K=25,500 (5.2% OTM call): <b>14.9%</b>
+
+The <b>put skew</b> (downside) is 7.7pp above ATM, while the upside is only 2.8pp — classic asymmetry.
+
+<b>However</b>, call IV also rises at high strikes, creating a slight "smirk" rather than a pure monotonic
+decline. This is common — the skew is the dominant feature, but there's a mild uptick in the
+right wing, especially for:
+<br>• Short-dated options around events (budget, RBI policy, earnings season)
+<br>• Periods of strong bullish momentum when call demand spikes
+
+<b>India-specific factors amplifying the skew:</b>
+<br>• Massive retail F&O participation (SEBI data: 90%+ of individual traders lose money)
+<br>• Institutional demand for portfolio insurance (FIIs hedging India exposure)
+<br>• Higher event risk (elections, RBI surprises, global oil shocks for oil-importing India)
+<br>• SEBI's margin and lot-size regulations affecting supply-demand dynamics""",
+            },
+            {
+                "q": "Q14. How does India VIX relate to the implied volatility surface?",
+                "a": """<b>India VIX</b> is the Indian equivalent of the CBOE VIX. It measures the market's expectation of
+30-day volatility for Nifty 50, computed from near- and next-month Nifty option prices.
+
+<b>Methodology (model-free, following CBOE):</b>
+<br>• Uses a wide range of OTM put and OTM call prices
+<br>• Weighted by 1/K² — gives more weight to lower strikes (where skew lives)
+<br>• Because of this weighting, India VIX <b>captures the skew effect</b>
+<br>• A steeper skew → higher VIX, even if ATM IV is unchanged
+
+<b>Key relationships:</b>
+<br>• India VIX ≈ weighted average of IVs across the smile/skew, not just ATM IV
+<br>• VIX > ATM IV always (because OTM puts with high IV get significant weight)
+<br>• VIX typically trades at a <b>premium to realized vol</b> (variance risk premium)
+<br>• Pre-event (budget, election): VIX spikes → skew steepens → OTM puts get very expensive
+<br>• Post-event: VIX crushes → skew flattens → "vol sellers" profit
+
+<b>Typical India VIX range:</b> 10-15 (calm), 15-25 (elevated), 25+ (crisis/extreme fear)""",
+            },
+            {
+                "q": "Q15. How does SEBI's F&O regulation affect the skew in Indian markets?",
+                "a": """SEBI has been actively tightening F&O market regulations, which directly impacts the volatility
+surface structure:
+
+<b>1. Increased lot sizes and margin requirements (2024-25):</b>
+<br>• Higher margins for short OTM options → fewer willing sellers → OTM puts get more expensive → steeper skew
+<br>• Reduced retail speculation → more informed/institutional pricing
+
+<b>2. Weekly expiry restrictions:</b>
+<br>• Only one weekly expiry per exchange (down from multiple indices)
+<br>• Concentrated liquidity → more efficient price discovery → cleaner skew pattern
+<br>• Less "theta decay farming" by retail → reduced artificial supply of OTM options
+
+<b>3. Upfront premium collection for option buyers:</b>
+<br>• Ensures genuine demand → reduces speculative noise in IV readings
+
+<b>4. Position limits and surveillance:</b>
+<br>• Large positions in deep OTM options get flagged → more orderly skew
+
+<b>Net effect:</b> Indian option markets are becoming more institutional in character, and the skew
+is likely to become <b>more stable and structurally similar</b> to developed markets like the S&P 500.
+The "vol smile" artifacts from extreme retail speculation are being gradually eliminated.
+
+<b>For students:</b> This is a great example of how market microstructure affects the volatility surface —
+a topic that bridges derivatives (Hull) and market risk (FRM).""",
+            },
+        ],
+        "Section E — Trading, Risk Management & Greeks": [
+            {
+                "q": "Q16. How does the skew affect delta hedging?",
+                "a": """When the volatility surface is not flat, delta hedging becomes more complex because the
+"correct" delta depends on which σ you use:
+
+<b>1. BS Delta (using single σ):</b>
+&emsp;Δ = N(d₁) where d₁ uses a single flat σ
+&emsp;Problem: Ignores the fact that σ changes as S moves and K/S₀ changes
+
+<b>2. "Sticky Strike" Delta:</b>
+&emsp;Assumes each strike K keeps its own fixed IV as spot moves
+&emsp;Δ<sub>sticky-K</sub> = ∂C/∂S with σ(K) held constant
+&emsp;Common assumption for equity index options
+
+<b>3. "Sticky Delta" (Sticky Moneyness) Delta:</b>
+&emsp;Assumes the IV at a given moneyness level (K/S) stays constant as S moves
+&emsp;Δ<sub>sticky-Δ</sub> = ∂C/∂S + (∂C/∂σ)·(∂σ/∂S)
+&emsp;More common for FX options
+
+<b>The practical difference:</b>
+<br>• For OTM puts in a skew environment, sticky-strike delta is typically <b>less negative</b> than
+  BS delta — you need fewer shares to hedge
+<br>• The error can be 5-15% of delta for deep OTM options
+<br>• Getting this wrong leads to P&L leakage over time ("vega-delta cross effect")
+
+<b>Hull (Ch. 20.6):</b> "The smile affects the Greek letters computed from the BS model. Practitioners
+  often adjust the Greeks to reflect the volatility smile."
+""",
+            },
+            {
+                "q": "Q17. What is a risk reversal and how does it measure the skew?",
+                "a": """A <b>risk reversal</b> is a strategy that directly trades the skew:
+
+&emsp;<b>Long risk reversal</b> = Buy OTM call + Sell OTM put (same delta, e.g., 25-delta)
+<br>&emsp;<b>Short risk reversal</b> = Sell OTM call + Buy OTM put
+
+<b>Risk reversal as a skew measure:</b>
+&emsp;RR<sub>25Δ</sub> = σ<sub>imp</sub>(25Δ call) − σ<sub>imp</sub>(25Δ put)
+
+<br>• If RR < 0 → puts are more expensive → <b>negative skew</b> (equity-style)
+<br>• If RR ≈ 0 → symmetric → <b>pure smile</b>
+<br>• If RR > 0 → calls are more expensive → <b>positive skew</b> (rare)
+
+<b>For Nifty 50:</b> The risk reversal is typically <b>negative</b> (−4 to −8 vol points), confirming
+the persistent equity skew. It widens during sell-offs and narrows during calm bullish phases.
+
+<b>Trading applications:</b>
+<br>• Skew traders go long/short risk reversals to bet on changes in skew steepness
+<br>• Collar strategies (long put + short call) are <b>cheap</b> when skew is steep (put expensive but
+  call cheap) — this is why portfolio managers use collars in skew-rich environments
+<br>• Risk reversal quotes are the standard way FX desks communicate skew""",
+            },
+            {
+                "q": "Q18. What is a butterfly spread and how does it measure the smile?",
+                "a": """A <b>butterfly spread</b> isolates the curvature (convexity) of the volatility surface:
+
+&emsp;<b>Long butterfly</b> = Buy 1× K₁ call + Sell 2× K₂ call + Buy 1× K₃ call
+&emsp;where K₁ < K₂ < K₃ and K₂ = (K₁+K₃)/2
+
+<b>Butterfly as a smile measure (25-delta):</b>
+&emsp;BF<sub>25Δ</sub> = ½ × [σ<sub>imp</sub>(25Δ call) + σ<sub>imp</sub>(25Δ put)] − σ<sub>ATM</sub>
+
+<br>• If BF > 0 → wings elevated above ATM → <b>smile exists</b> (positive curvature)
+<br>• If BF ≈ 0 → flat wings → no smile
+<br>• BF is always ≥ 0 in practice (no arbitrage requires convexity in the call price function)
+
+<b>Relationship between RR and BF:</b>
+<br>• <b>RR</b> measures <b>tilt/asymmetry</b> → skew component
+<br>• <b>BF</b> measures <b>curvature/wings</b> → smile component
+<br>• Together they fully characterize the 3-point smile (25Δ put, ATM, 25Δ call)
+
+<b>For a pure smile (FX):</b> Large BF, small |RR|
+<br><b>For a pure skew (equities):</b> Large |RR|, moderate BF
+<br><b>Nifty:</b> Both BF and |RR| are significant — skew dominates but curvature exists too""",
+            },
+            {
+                "q": "Q19. How does vega exposure change across the smile?",
+                "a": """<b>Vega</b> (sensitivity of option price to a 1pp change in IV) varies across the smile:
+
+&emsp;ν = S₀·√T·N′(d₁)
+
+<b>Key relationships:</b>
+<br>• Vega is <b>highest at ATM</b> (N′(d₁) peaks when d₁ ≈ 0)
+<br>• Vega <b>declines</b> for deep ITM and deep OTM options
+<br>• But in a skew environment, OTM puts have higher IV → their <b>dollar vega</b> is amplified
+
+<b>Portfolio implications:</b>
+<br>1. A portfolio of OTM puts is <b>short skew</b> — profits if skew flattens
+<br>2. Market makers who sell OTM puts are <b>short vega AND short skew</b> — double exposure
+<br>3. During a crash: IV spikes AND skew steepens → OTM put sellers face <b>convex losses</b>
+<br>4. This is why 2008, 2020 produced massive losses for systematic put-selling strategies
+
+<b>Vega-weighted skew exposure:</b>
+<br>The "vega-weighted" skew is what matters for P&L, not just the IV difference. A 10pp IV
+increase on an option with ν = 50 moves the price by ₹500 per lot. Traders track vega exposure
+<em>by strike</em>, not just total portfolio vega.""",
+            },
+        ],
+        "Section F — Models & Advanced Topics": [
+            {
+                "q": "Q20. Which models produce a volatility smile? Which produce a skew?",
+                "a": """<b>Models that generate a SMILE (symmetric):</b>
+
+<b>1. Jump-Diffusion (Merton, 1976):</b>
+&emsp;dS/S = (μ−λk̄)dt + σdW + J·dN(λ)
+<br>&emsp;Where J = random jump size, dN = Poisson process
+<br>&emsp;If jumps are symmetric → smile. If jumps are asymmetric → can produce skew too.
+
+<b>2. Stochastic Volatility — Heston (1993):</b>
+&emsp;dS/S = μdt + √v·dW₁
+<br>&emsp;dv = κ(θ−v)dt + ξ√v·dW₂
+<br>&emsp;corr(dW₁, dW₂) = ρ
+<br>&emsp;If ρ = 0 → pure smile. If ρ < 0 → skew (this is the equity case!).
+
+<b>3. Variance Gamma (Madan, Carr, Chang, 1998):</b>
+&emsp;Subordinated Brownian motion — can produce both smile and skew depending on parameters.
+
+<b>Models that generate a SKEW:</b>
+<br>• Heston with ρ < 0 (negative correlation between returns and vol)
+<br>• CEV model (σ(S) = σ₀·S<sup>β−1</sup>, β < 1 → vol rises as S falls)
+<br>• SABR model (popular in fixed income: σ follows its own stochastic process)
+<br>• Local volatility (Dupire, 1994) — fitted to exactly reproduce any observed surface
+
+<b>Exam tip:</b> Hull Ch. 20 focuses on <em>why</em> the smile/skew exists. Ch. 27 covers stochastic vol models.
+For FRM, know Heston and SABR. For CFA, know the intuition behind smile/skew patterns.""",
+            },
+            {
+                "q": "Q21. What is the Dupire local volatility model?",
+                "a": """Dupire (1994) showed that you can find a <b>deterministic</b> volatility function σ<sub>loc</sub>(S,t)
+that exactly reproduces all observed option prices (and hence the entire implied vol surface).
+
+<b>Dupire's formula:</b>
+&emsp;σ²<sub>loc</sub>(K,T) = 2 × [∂C/∂T + rK·∂C/∂K] / [K²·∂²C/∂K²]
+
+This is derived from the Fokker-Planck (forward Kolmogorov) equation.
+
+<b>Key properties:</b>
+<br>• It's a <b>one-factor model</b> — only one source of randomness (dW)
+<br>• It perfectly fits today's smile/skew by construction
+<br>• σ<sub>loc</sub>(S,t) varies with both stock price and time — it's a surface, not a number
+<br>• The local vol surface is <b>not the same</b> as the implied vol surface — local vol is typically
+  roughly twice as curved
+
+<b>Limitations:</b>
+<br>• It predicts future smile dynamics poorly — the smile "flattens too quickly" over time
+<br>• It doesn't capture <b>stochastic volatility</b> — vol changes are deterministic given S
+<br>• Forward-starting options and cliquets are mispriced
+<br>• Exotic option hedging can be unreliable
+
+<b>In practice:</b> Dupire is used for initial calibration and as a baseline. Traders then layer
+stochastic vol (Heston, SABR) or jump-diffusion on top for realistic dynamics.""",
+            },
+            {
+                "q": "Q22. What is the SABR model and why is it important?",
+                "a": """<b>SABR</b> (Stochastic Alpha Beta Rho) was introduced by Hagan et al. (2002) and is the industry
+standard for modeling the smile in interest rate and FX options.
+
+<b>Model dynamics:</b>
+&emsp;dF = α·F<sup>β</sup>·dW₁ &nbsp;&nbsp;(forward rate)
+<br>&emsp;dα = ν·α·dW₂ &nbsp;&nbsp;(stochastic volatility)
+<br>&emsp;corr(dW₁, dW₂) = ρ
+
+<b>Four parameters:</b>
+<br>• <b>α</b> — initial volatility level (ATM vol)
+<br>• <b>β</b> — elasticity parameter (0 = normal model, 1 = lognormal model)
+<br>• <b>ρ</b> — correlation between F and α (controls skew: ρ < 0 → negative skew)
+<br>• <b>ν</b> — vol-of-vol (controls curvature/smile wings)
+
+<b>Hagan's approximation</b> gives a closed-form expression for σ<sub>imp</sub>(K) — making calibration fast.
+
+<b>Why traders love it:</b>
+<br>• Intuitive parameters: each one controls a specific feature of the smile
+<br>• Fast calibration to market quotes (swaptions, caps/floors, FX)
+<br>• Handles both smile and skew through ρ
+<br>• Backbone parameter β can be fixed (reducing to 3-param calibration)
+
+<b>Used extensively in:</b> swaption pricing, cap/floor trading, CMS spread options, FX volatility.""",
+            },
+        ],
+        "Section G — CFA / FRM / MBA Exam Focus": [
+            {
+                "q": "Q23. [CFA Level II] If an equity index shows a volatility skew, what does this imply about the risk-neutral distribution vs lognormal?",
+                "a": """<b>Model answer:</b>
+
+The volatility skew for equity index options implies that the market's risk-neutral probability
+distribution differs from the lognormal distribution assumed by Black-Scholes in two key ways:
+
+<b>1. Negative skewness:</b> The risk-neutral distribution has a heavier left tail than the lognormal.
+This means the market assigns a higher probability to large downside moves than Black-Scholes
+would predict. This is evidenced by elevated implied volatilities for OTM puts (low strikes).
+
+<b>2. Excess kurtosis (fat tails):</b> Both tails are somewhat heavier than lognormal, though the
+effect is more pronounced on the left. This means extreme events in either direction are priced
+as more likely than the lognormal assumption.
+
+<b>Economic rationale:</b>
+<br>• The leverage effect: as equity prices fall, financial leverage increases, making the firm
+  riskier and increasing volatility — this creates an asymmetric vol-price relationship
+<br>• Crashophobia: investors' demand for downside protection drives up OTM put prices
+<br>• The skew has persisted since the 1987 crash and is observed globally
+
+<b>Practical implication:</b> Using a single σ to price all strikes will <b>underprice</b> OTM puts
+and <b>overprice</b> ATM options relative to the market.""",
+            },
+            {
+                "q": "Q24. [FRM Part 1] Explain the difference between implied volatility and local volatility. Why might a risk manager care?",
+                "a": """<b>Model answer:</b>
+
+<b>Implied Volatility σ<sub>imp</sub>(K,T):</b>
+<br>• The constant σ that, when inserted into Black-Scholes, reproduces the market price of a specific
+  option with strike K and expiry T
+<br>• It is a <b>per-option</b> quantity — each (K,T) pair has its own σ<sub>imp</sub>
+<br>• It is a <b>model-dependent</b> concept (depends on BS framework)
+<br>• It aggregates all non-BS effects (jumps, stochastic vol, skewness) into one number
+
+<b>Local Volatility σ<sub>loc</sub>(S,t):</b>
+<br>• The instantaneous volatility of the underlying at price level S and time t
+<br>• Derived from the entire implied vol surface using Dupire's formula
+<br>• It varies with both S and t — it's a <b>function</b>, not a single number
+<br>• It is the unique diffusion coefficient that reproduces all vanilla option prices simultaneously
+
+<b>Why a risk manager cares:</b>
+<br>1. <b>VaR computation:</b> Using flat BS vol underestimates tail risk. The skew tells you the market
+   prices in higher crash probability → VaR should reflect this
+<br>2. <b>Stress testing:</b> In a sell-off, IV increases AND skew steepens → double hit to OTM put sellers
+<br>3. <b>Model risk:</b> Local vol models may underestimate forward-starting option risk (smile dynamics)
+<br>4. <b>Greeks accuracy:</b> Delta and gamma computed with flat vol can be materially wrong for OTM options""",
+            },
+            {
+                "q": "Q25. [Practice] An ATM Nifty call has IV = 12%. An OTM put at K = 23,000 has IV = 19.8%. If you use 12% to price the put, by roughly how much do you underprice it?",
+                "a": """<b>Setup:</b>
+<br>• S₀ = ₹24,250, K = ₹23,000, ATM IV = 12%, True IV = 19.8%
+<br>• Let's assume T = 30 days (0.082 years), r = 6.5%
+
+<b>Approximate using vega:</b>
+<br>The vega of an OTM put at this moneyness (K/S₀ = 0.948) is approximately ₹15-20 per 1% IV change
+per lot (assuming lot size 25).
+
+&emsp;ΔIV = 19.8% − 12.0% = <b>7.8 percentage points</b>
+<br>&emsp;Approximate mispricing ≈ 7.8 × ₹17 ≈ <b>₹133 per lot</b> (rough estimate)
+
+<b>Using Black-Scholes directly:</b>
+<br>&emsp;Put price at σ = 12.0%: ≈ ₹18 per share → ₹450 per lot
+<br>&emsp;Put price at σ = 19.8%: ≈ ₹98 per share → ₹2,450 per lot
+
+<b>Underpricing: roughly ₹2,000 per lot — the put is 5× more expensive at the correct IV!</b>
+
+<b>Key lesson:</b> Using a flat ATM vol to price OTM puts can lead to massive underpricing.
+This is why the volatility surface exists — practitioners MUST use strike-specific IV.
+Banks that ignored the skew in their risk models learned this lesson painfully in 2008.
+
+<b>Exam tip:</b> You won't need exact calculations. Know the direction and magnitude of the error —
+flat vol <b>always</b> underprices OTM puts in a skew environment.""",
+            },
+        ],
+    }
+
+    # ── Section title ──
+    st.html(f"""
+    <div style="
+        font-family:'Playfair Display',serif;
+        color:{GOLD}; -webkit-text-fill-color:{GOLD};
+        font-size:1.35rem;
+        margin-bottom:2px;
+        user-select:none;
+    ">🎓 Comprehensive Q&A — Volatility Smile & Skew</div>
+    <div style="
+        font-family:'Source Sans Pro',sans-serif;
+        color:{MUTED}; -webkit-text-fill-color:{MUTED};
+        font-size:0.86rem;
+        margin-bottom:18px;
+        user-select:none;
+    ">25 questions spanning foundations, trading, models, and exam prep &nbsp;|&nbsp; Hull Ch. 20 &nbsp;|&nbsp; CFA / FRM / MBA</div>
+    """)
+
+    # ── Progress tracker ──
+    if "qa_revealed" not in st.session_state:
+        st.session_state.qa_revealed = set()
+
+    total_q = sum(len(qas) for qas in QA_SECTIONS.values())
+    revealed_count = len(st.session_state.qa_revealed)
+
+    st.html(f"""
+    <div style="
+        background:rgba(0,51,102,0.4);
+        border:1px solid rgba(255,215,0,0.15);
+        border-radius:10px;
+        padding:14px 20px;
+        margin-bottom:18px;
+        display:flex;
+        justify-content:space-between;
+        align-items:center;
+        user-select:none;
+    ">
+        <div style="font-family:'Source Sans Pro',sans-serif; color:{TEXT}; -webkit-text-fill-color:{TEXT}; font-size:0.9rem;">
+            Progress: <b style="color:{GOLD};-webkit-text-fill-color:{GOLD};">{revealed_count}</b> / {total_q} answers revealed
+        </div>
+        <div style="
+            background:rgba(10,22,40,0.6);
+            border-radius:6px;
+            width:200px;
+            height:10px;
+            overflow:hidden;
+        ">
+            <div style="
+                background:{GOLD};
+                height:100%;
+                width:{revealed_count/total_q*100:.0f}%;
+                border-radius:6px;
+                transition:width 0.3s;
+            "></div>
+        </div>
+    </div>
+    """)
+
+    # ── Render sections ──
+    q_index = 0
+    for section_title, questions in QA_SECTIONS.items():
+        st.html(f"""
+        <div style="
+            font-family:'Playfair Display',serif;
+            color:{LIGHT_BLUE}; -webkit-text-fill-color:{LIGHT_BLUE};
+            font-size:1.05rem;
+            margin:22px 0 10px;
+            padding-bottom:6px;
+            border-bottom:1px solid rgba(173,216,230,0.2);
+            user-select:none;
+        ">{section_title}</div>
+        """)
+
+        for qa in questions:
+            q_key = f"qa_{q_index}"
+
+            # Question box (always visible)
+            st.html(f"""
+            <div style="
+                background:rgba(0,51,102,0.35);
+                border:1px solid rgba(255,215,0,0.12);
+                border-left:3px solid {GOLD};
+                border-radius:0 8px 8px 0;
+                padding:12px 16px;
+                margin:8px 0 4px;
+                user-select:none;
+            ">
+                <div style="
+                    font-family:'Source Sans Pro',sans-serif;
+                    font-size:0.92rem;
+                    font-weight:700;
+                    color:{GOLD}; -webkit-text-fill-color:{GOLD};
+                    line-height:1.5;
+                ">{qa['q']}</div>
+            </div>
+            """)
+
+            # Toggle button
+            if st.button(
+                "Hide Answer" if q_key in st.session_state.qa_revealed else "💡 Reveal Answer",
+                key=q_key,
+                use_container_width=True,
+            ):
+                if q_key in st.session_state.qa_revealed:
+                    st.session_state.qa_revealed.discard(q_key)
+                else:
+                    st.session_state.qa_revealed.add(q_key)
+                st.rerun()
+
+            # Answer box (conditionally visible)
+            if q_key in st.session_state.qa_revealed:
+                st.html(f"""
+                <div style="
+                    background:rgba(17,34,64,0.85);
+                    border:1px solid rgba(173,216,230,0.12);
+                    border-radius:10px;
+                    padding:18px 22px;
+                    margin:4px 0 14px;
+                    user-select:none;
+                ">
+                    <div style="
+                        font-family:'Source Sans Pro',sans-serif;
+                        font-size:0.86rem;
+                        line-height:1.7;
+                        color:{TEXT}; -webkit-text-fill-color:{TEXT};
+                    ">{qa['a']}</div>
+                </div>
+                """)
+
+            q_index += 1
+
+    # ── Bottom summary ──
+    voiceover_box(
+        "This Q&A section covers the full breadth of volatility smile and skew topics as tested in "
+        "CFA Level II (Derivatives), FRM Part 1 (Market Risk / Valuation & Risk Models), and MBA "
+        "Derivatives courses. Each answer is designed to be self-contained — you can use any single "
+        "answer as a class handout or exam revision note. For deeper exploration, see Hull Ch. 20 "
+        "(Volatility Smiles), Ch. 27 (Martingales & Measures), and Natenberg Ch. 18 (Volatility Skew)."
+    )
+
+    hull_box(
+        "Recommended Reading Sequence",
+        f"<span style='color:{LIGHT_BLUE};-webkit-text-fill-color:{LIGHT_BLUE};'>1.</span> "
+        "Hull, <i>Options, Futures & Other Derivatives</i>, Ch. 20: Volatility Smiles<br>"
+        f"<span style='color:{LIGHT_BLUE};-webkit-text-fill-color:{LIGHT_BLUE};'>2.</span> "
+        "Natenberg, <i>Option Volatility & Pricing</i>, Ch. 18: Volatility Skew<br>"
+        f"<span style='color:{LIGHT_BLUE};-webkit-text-fill-color:{LIGHT_BLUE};'>3.</span> "
+        "Gatheral, <i>The Volatility Surface</i> — for advanced practitioners<br>"
+        f"<span style='color:{LIGHT_BLUE};-webkit-text-fill-color:{LIGHT_BLUE};'>4.</span> "
+        "Rubinstein (1994), \"Implied Binomial Trees\" — the crashophobia paper<br>"
+        f"<span style='color:{LIGHT_BLUE};-webkit-text-fill-color:{LIGHT_BLUE};'>5.</span> "
+        "Dupire (1994), \"Pricing with a Smile\" — local volatility foundation"
+    )
 mountain_footer()
